@@ -2,13 +2,13 @@ import matplotlib.pyplot as plt
 import math
 import random
 
-nb_objets = 50
-nb_annees = 200
+nb_objets = 200
+nb_annees = 10000
 nb_UA = 5
-intervalle_nb_jours = 2
+intervalle_nb_jours = 3
 loin = 1.2  # éloignement des pltl / planete
 # excentricity
-e = 0.02
+e = 0.2
 e_pltl = 0
 # constants :
 constG = 6.67408 * 10 ** (-11)
@@ -30,7 +30,7 @@ def rand_pos():  # used to create randomly initially placed planetesimals around
 class Planetesimal:
     """represents a planetimal"""
 
-    plan_mass = 5.97e+24
+    plan_mass = 8.682e+25
     star_mass = 1.9884e+30
     mu = constG * star_mass
 
@@ -64,11 +64,11 @@ class Planetesimal:
 
     def accel_planetesimal(self, posx, posy):
         # acceleration of one planetesimal
-        return ((-posx * constG * self.star_mass / (math.sqrt(posx ** 2 + posy ** 2) ** 3)) +
-                ((planete.posx - posx) * constG * self.plan_mass / (math.sqrt((planete.posx - posx) ** 2 +
+        return ((-posx * constG * self.star_mass / (math.sqrt(posx ** 2 + posy ** 2) ** 3)) -
+                ((posx - planete.posx) * constG * self.plan_mass / (math.sqrt((planete.posx - posx) ** 2 +
                                                                               (planete.posy - posy) ** 2) ** 3)),
-                (-posy * constG * self.star_mass / (math.sqrt(posx ** 2 + posy ** 2) ** 3)) +
-                ((planete.posy - posy) * constG * self.plan_mass / (math.sqrt((planete.posx - posx) ** 2 +
+                (-posy * constG * self.star_mass / (math.sqrt(posx ** 2 + posy ** 2) ** 3)) -
+                ((posy - planete.posy) * constG * self.plan_mass / (math.sqrt((planete.posx - posx) ** 2 +
                                                                               (planete.posy - posy) ** 2) ** 3)))
 
     def __next__(self):
@@ -109,7 +109,7 @@ class Planetesimal:
 class Planete:
     """représente une planète"""
 
-    mass = 5.97e+24  # Earth mass
+    # mass = 5.97e+24  # Earth mass
     star_mass = 1.9884e+30  # Sun mass
     mu = constG * star_mass
 
@@ -195,7 +195,7 @@ class Planete:
         return self """
 
 
-planete = Planete('Terre')
+planete = Planete('Uranus')
 print(planete.name)
 coordx, coordy = [], []  # lists containing coordinates of the planet
 # planete.error1()
@@ -213,23 +213,25 @@ for i in range(nb_objets):
 
 while planete.t < nbiter:
 
+    for i in range(nb_objets):
+        next(mvt_pltl[i - 1])
+
     coordx.append(planete.posx)
     coordy.append(planete.posy)
-
-    for i in range(nb_objets):
-        coordx_pltl.append(planetesimal[i-1].posx)
-        coordy_pltl.append(planetesimal[i-1].posy)
-        next(planetesimal[i - 1])
-
     next(mvt)
 
     if math.sqrt(planete.posx ** 2 + planete.posy ** 2) < 1400000:  # collision
         break
 
+for i in range(nb_objets):
+    coordx_pltl.append(planetesimal[i - 1].posx)
+    coordy_pltl.append(planetesimal[i - 1].posy)
 # planete.error2()
 # print("dE =", planete.de_tot)
+
+
 plt.grid(True)
-plt.plot(coordx, coordy, linestyle='-.')  # planet's coordinates
-plt.plot(coordx_pltl, coordy_pltl, linestyle='None', color='g', marker=',')  # planetesimals coordinates
+plt.plot(coordx, coordy, linestyle='-.', marker=',')  # planet's coordinates
+plt.plot(coordx_pltl, coordy_pltl, linestyle='None', color='g', marker='.')  # planetesimals coordinates
 plt.plot([0], marker='o', color='r')  # star's coordinates
 plt.show()
