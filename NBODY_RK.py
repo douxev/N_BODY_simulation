@@ -3,9 +3,9 @@ import math
 import random
 import os
 
-reset = 0
+reset = 1
 nb_objets = 200
-nb_annees = 500
+nb_annees = 1000
 nb_UA = 1
 intervalle_nb_jours = 2
 loin = 1.2  # éloignement des planetesimales / planete
@@ -20,13 +20,14 @@ intervalle = 86400 * intervalle_nb_jours
 lim = a * 3
 file_name = 'positions_save.txt'
 
+
 # Working on NBODY_RK
 
 
 def rand_pos():  # used to create randomly initially placed planetesimals around the star
     rand_r = random.randrange(a, loin * a, 500)
     rand_y = random.randrange(0, rand_r, 500)
-    rand_x = math.sqrt(rand_r**2-rand_y**2)
+    rand_x = math.sqrt(rand_r ** 2 - rand_y ** 2)
     rand_x = math.copysign(rand_x, random.choice((-1, 1)))
     rand_y = math.copysign(rand_y, random.choice((-1, 1)))
     return rand_x, rand_y
@@ -45,6 +46,8 @@ class Planetesimal:
         self.tolerance = 1e-14
         self.dt = intervalle
 
+    def __iter__(self):
+        self.dt = intervalle
         # orbital param initialisation
         self.dE = self.tolerance + 1
         self.M = math.fmod(math.atan(self.posy / self.posx) +
@@ -63,9 +66,6 @@ class Planetesimal:
         self.vx = -math.sin(self.E) * math.sqrt(self.mu * self.a_pltl) / self.r
         self.vy = math.sqrt(1 - e_pltl ** 2) * math.cos(self.E) * math.sqrt(self.mu * self.a_pltl) / self.r
         # end of orbital initialisation param
-
-    def __iter__(self):
-        self.dt = intervalle
         return self
 
     def accel_planetesimal(self, posx, posy):
@@ -78,9 +78,6 @@ class Planetesimal:
                                                                               (planete.posy - posy) ** 2) ** 3)))
 
     def __next__(self):
-
-
-
         # k1
         self.k1s = self.accel_planetesimal(self.posx, self.posy)
 
@@ -128,6 +125,9 @@ class Planete:
         self.tolerance = 1e-14
         self.dt = intervalle
         self.t_abs = 0
+
+    def __iter__(self):
+        self.dt = intervalle
         # orbital param initialisation
         self.dE = self.tolerance + 1
         self.M = math.fmod(self.dt * math.sqrt(self.mu / a ** 3), 2 * math.pi)
@@ -144,9 +144,6 @@ class Planete:
         self.vx = -math.sin(self.E) * math.sqrt(self.mu * a) / self.r
         self.vy = math.sqrt(1 - e ** 2) * math.cos(self.E) * math.sqrt(self.mu * a) / self.r
         # end of orbital initialisation param
-
-    def __iter__(self):
-        self.dt = intervalle
         return self
 
     def accel(self, posx, posy):
@@ -187,19 +184,19 @@ class Planete:
         self.posy = self.posy + self.dt * (self.k1py + 2 * self.k2py + 2 * self.k3py + self.k4py) / 6
         self.t_abs += self.dt
         self.t += self.dt
-        if self.t > 0.1 * 31536000 and self.t < 1 * 31536000:
+        """if self.t > 0.1 * 31536000 and self.t < 1 * 31536000:
             # ERROR 1
             self.e_cin = 0.5 * self.mass * math.sqrt(self.vx ** 2 + self.vy ** 2)
             self.e_pot = 0.5 * constG * self.mass * self.star_mass / math.sqrt(self.posx ** 2 + self.posy ** 2)
-            self.e_tot = -self.e_cin + self.e_pot
+            self.e_tot = -self.e_cin + self.e_pot"""
         return self
 
-    def error2(self):
+    """def error2(self):
         self.e_cin = 0.5 * self.mass * math.sqrt(self.vx ** 2 + self.vy ** 2)
         self.e_pot = 0.5 * constG * self.mass * self.star_mass / math.sqrt(self.posx ** 2 + self.posy ** 2)
         self.e_tot2 = -self.e_cin + self.e_pot
         self.de_tot = (self.e_tot2 - self.e_tot) / self.e_tot
-        return self
+        return self"""
 
 
 planete = Planete('Uranus')
@@ -217,13 +214,13 @@ for i in range(nb_objets):
 # FILE READING
 with open(file_name, 'r') as file:
     file_lines = file.readlines()
-    if (os.path.getsize(file_name) > 0 and reset == 0):  # then write the file if file empty
+    if os.path.getsize(file_name) > 0 and reset == 0:  # then write the file if file empty
         written = 1
     else:  # if not empty then read previous positions and write new ones
         written = 0
 
 # FILE READING
-if (written == 1):
+if written == 1:
     nb_objets = int(file_lines[0])
     planete.posx = float(file_lines[1])
     planete.posy = float(file_lines[2])
@@ -231,7 +228,7 @@ if (written == 1):
     planete.vy = float(file_lines[4])
 
     for i in range(nb_objets):
-        j = i*4 + 5
+        j = i * 4 + 5
         planetesimal[i].posx = float(file_lines[j])
         planetesimal[i].posy = float(file_lines[j + 1])
         planetesimal[i].vx = float(file_lines[j + 2])
@@ -244,7 +241,7 @@ if (written == 1):
 
 
 for i in range(nb_objets):  # iter launch
-    mvt_pltl.append(iter(planetesimal[i-1]))
+    mvt_pltl.append(iter(planetesimal[i - 1]))
 mvt = iter(planete)
 
 print("{t}, {int}".format(t=planete.t_abs, int=intervalle))
@@ -261,12 +258,12 @@ while planete.t < nbiter:  # SIM LOOP
     if math.sqrt(planete.posx ** 2 + planete.posy ** 2) < 1400000:  # collision
         break
 
-print("{ans} ans se sont écoulés.\n{obj} planétésimales.\n".format(ans = int(planete.t_abs / 31536000), obj=nb_objets))
+print("{ans} ans se sont écoulés.\n{obj} planétésimales.\n".format(ans=int(planete.t_abs / 31536000), obj=nb_objets))
 for i in range(nb_objets):
     coordx_pltl.append(planetesimal[i - 1].posx)
     coordy_pltl.append(planetesimal[i - 1].posy)
-planete.error2()
-print("dE =", planete.de_tot)
+# planete.error2()
+# print("dE =", planete.de_tot)
 figure = plt.figure()
 axes = figure.add_subplot(111)
 axes.set_xlim(-lim, lim)
@@ -279,11 +276,9 @@ plt.show()
 
 with open(file_name, 'w') as file:
     file.write("{}\n".format(nb_objets))
-    file.write("{posx}\n{posy}\n{vx}\n{vy}\n".format(posx = planete.posx, posy = planete.posy,
-                                                     vx = planete.vx, vy = planete.vy))
+    file.write("{posx}\n{posy}\n{vx}\n{vy}\n".format(posx=planete.posx, posy=planete.posy,
+                                                     vx=planete.vx, vy=planete.vy))
     for i in range(0, nb_objets):
-        file.write("{posx2}\n{posy2}\n{vx2}\n{vy2}\n".format(posx2=planetesimal[i].posx,
-                                                                  posy2=planetesimal[i].posy,
-                                                                  vx2=planetesimal[i].vx,
-                                                                  vy2=planetesimal[i].vy,))
+        file.write("{posx2}\n{posy2}\n{vx2}\n{vy2}\n".format(posx2=planetesimal[i].posx, posy2=planetesimal[i].posy,
+                                                             vx2=planetesimal[i].vx, vy2=planetesimal[i].vy, ))
     file.write("{t}\n{dt}\n".format(t=planete.t_abs, dt=intervalle))
