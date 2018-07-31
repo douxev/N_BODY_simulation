@@ -3,9 +3,9 @@ import math
 import random
 
 nb_objets = 200
-nb_annees = 10000
-nb_UA = 5
-intervalle_nb_jours = 3
+nb_annees = 1000
+nb_UA = 1
+intervalle_nb_jours = 10
 loin = 1.2  # éloignement des pltl / planete
 # excentricity
 e = 0.2
@@ -15,15 +15,17 @@ constG = 6.67408 * 10 ** (-11)
 nbiter = 31536000 * nb_annees
 a = 149597900000.0 * nb_UA
 intervalle = 86400 * intervalle_nb_jours
-
+lim = a*1.5
 
 # Working on NBODY_RK
 
 
 def rand_pos():  # used to create randomly initially placed planetesimals around the star
-
-    rand_x = random.choice((random.randrange(-loin * a, -a, 500), random.randrange(a, loin * a, 500)))
-    rand_y = random.choice((random.randrange(-loin * a, -a, 500), random.randrange(a, loin * a, 500)))
+    rand_r = random.randrange(a, loin * a, 500)
+    rand_y = random.randrange(0, rand_r, 500)
+    rand_x = math.sqrt(rand_r**2-rand_y**2)
+    rand_x = math.copysign(rand_x, random.choice((-1, 1)))
+    rand_y = math.copysign(rand_y, random.choice((-1, 1)))
     return rand_x, rand_y
 
 
@@ -228,8 +230,10 @@ for i in range(nb_objets):
     coordy_pltl.append(planetesimal[i - 1].posy)
 # planete.error2()
 # print("dE =", planete.de_tot)
-
-
+figure = plt.figure()
+axes = figure.add_subplot(111)
+axes.set_xlim(-lim, lim)
+axes.set_ylim(-lim, lim)
 plt.grid(True)
 plt.plot(coordx, coordy, linestyle='-.', marker=',')  # planet's coordinates
 plt.plot(coordx_pltl, coordy_pltl, linestyle='None', color='g', marker='.')  # planetesimals coordinates
