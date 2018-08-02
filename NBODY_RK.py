@@ -3,14 +3,13 @@ import math
 import random
 import os
 
-reset = 1
-nb_objets = 200
-nb_annees = 1000
+nb_objets = 100
+nb_annees = 200
 nb_UA = 1
 intervalle_nb_jours = 2
 loin = 1.2  # éloignement des planetesimales / planete
 # excentricity
-e = 0.2
+e = 0
 e_pltl = 0
 # constants :
 constG = 6.67408 * 10 ** (-11)
@@ -18,7 +17,9 @@ nbiter = 31536000 * nb_annees
 a = 149597900000.0 * nb_UA
 intervalle = 86400 * intervalle_nb_jours
 lim = a * 3
-file_name = 'positions_save.txt'
+file_name = 'positions.save'
+reset = int(input("1 to reset the simulation, 0 to continue : "))
+
 
 
 # Working on NBODY_RK
@@ -40,7 +41,8 @@ class Planetesimal:
     star_mass = 1.9884e+30
     mu = constG * star_mass
 
-    def __init__(self):
+    def __init__(self, number):
+        self.number = int(number)
         self.posx, self.posy = rand_pos()  # defining initial position
         self.a_pltl = math.sqrt(self.posx ** 2 + self.posy ** 2)
         self.tolerance = 1e-14
@@ -78,36 +80,43 @@ class Planetesimal:
                                                                               (planete.posy - posy) ** 2) ** 3)))
 
     def __next__(self):
-        # k1
-        self.k1s = self.accel_planetesimal(self.posx, self.posy)
 
-        self.k1px = self.vx
-        self.k1py = self.vy
+        if ((planete.posx - self.posx) ** 2 + (planete.posy - self.posy) ** 2 > 5e+11):
+            # k1
+            self.k1s = self.accel_planetesimal(self.posx, self.posy)
 
-        # k2
-        self.k2s = self.accel_planetesimal(self.posx + self.k1px * self.dt / 2, self.posy + self.k1py * self.dt / 2)
+            self.k1px = self.vx
+            self.k1py = self.vy
 
-        self.k2px = self.vx + self.k1s[0] * self.dt / 2
-        self.k2py = self.vy + self.k1s[1] * self.dt / 2
+            # k2
+            self.k2s = self.accel_planetesimal(self.posx + self.k1px * self.dt / 2, self.posy + self.k1py * self.dt / 2)
 
-        # k3
-        self.k3s = self.accel_planetesimal(self.posx + self.k2px * self.dt / 2, self.posy + self.k2py * self.dt / 2)
+            self.k2px = self.vx + self.k1s[0] * self.dt / 2
+            self.k2py = self.vy + self.k1s[1] * self.dt / 2
 
-        self.k3px = self.vx + self.k2s[0] * self.dt / 2
-        self.k3py = self.vy + self.k2s[1] * self.dt / 2
+            # k3
+            self.k3s = self.accel_planetesimal(self.posx + self.k2px * self.dt / 2, self.posy + self.k2py * self.dt / 2)
 
-        # k4
-        self.k4s = self.accel_planetesimal(self.posx + self.k3px * self.dt, self.posy + self.k3py * self.dt)
+            self.k3px = self.vx + self.k2s[0] * self.dt / 2
+            self.k3py = self.vy + self.k2s[1] * self.dt / 2
 
-        self.k4px = self.vx + self.k3s[0] * self.dt
-        self.k4py = self.vy + self.k3s[1] * self.dt
+            # k4
+            self.k4s = self.accel_planetesimal(self.posx + self.k3px * self.dt, self.posy + self.k3py * self.dt)
 
-        # calculating speed at time + dt
-        self.vx = self.vx + self.dt * (self.k1s[0] + 2 * self.k2s[0] + 2 * self.k3s[0] + self.k4s[0]) / 6
-        self.vy = self.vy + self.dt * (self.k1s[1] + 2 * self.k2s[1] + 2 * self.k3s[1] + self.k4s[1]) / 6
-        # calculating position at time + dt
-        self.posx = self.posx + self.dt * (self.k1px + 2 * self.k2px + 2 * self.k3px + self.k4px) / 6
-        self.posy = self.posy + self.dt * (self.k1py + 2 * self.k2py + 2 * self.k3py + self.k4py) / 6
+            self.k4px = self.vx + self.k3s[0] * self.dt
+            self.k4py = self.vy + self.k3s[1] * self.dt
+
+            # calculating speed at time + dt
+            self.vx = self.vx + self.dt * (self.k1s[0] + 2 * self.k2s[0] + 2 * self.k3s[0] + self.k4s[0]) / 6
+            self.vy = self.vy + self.dt * (self.k1s[1] + 2 * self.k2s[1] + 2 * self.k3s[1] + self.k4s[1]) / 6
+            # calculating position at time + dt
+            self.posx = self.posx + self.dt * (self.k1px + 2 * self.k2px + 2 * self.k3px + self.k4px) / 6
+            self.posy = self.posy + self.dt * (self.k1py + 2 * self.k2py + 2 * self.k3py + self.k4py) / 6
+        else:
+            self.posx, self.posy = 0, 0
+            planetesimal.pop(self.number)
+            planete.nb_objets -= 1
+            mvt_pltl.pop(self.number)
 
         return self
 
@@ -122,9 +131,10 @@ class Planete:
     def __init__(self, name):
         self.name = name
         self.t = 0
-        self.tolerance = 1e-14
+        self.tolerance = 1e-20
         self.dt = intervalle
         self.t_abs = 0
+        self.nb_objets = nb_objets
 
     def __iter__(self):
         self.dt = intervalle
@@ -209,7 +219,7 @@ planetesimal = []
 mvt_pltl = []
 
 for i in range(nb_objets):
-    planetesimal.append(Planetesimal())
+    planetesimal.append(Planetesimal(i-1))
 
 # FILE READING
 with open(file_name, 'r') as file:
@@ -250,14 +260,14 @@ while planete.t < nbiter:  # SIM LOOP
 
     for i in range(nb_objets):
         next(mvt_pltl[i - 1])
-
     next(mvt)
     coordx.append(planete.posx)
     coordy.append(planete.posy)
 
-    if math.sqrt(planete.posx ** 2 + planete.posy ** 2) < 1400000:  # collision
+    if math.sqrt(planete.posx ** 2 + planete.posy ** 2) < 1400000:  # collision with the sun
         break
 
+nb_objets = planete.nb_objets
 print("{ans} ans se sont écoulés.\n{obj} planétésimales.\n".format(ans=int(planete.t_abs / 31536000), obj=nb_objets))
 for i in range(nb_objets):
     coordx_pltl.append(planetesimal[i - 1].posx)
