@@ -4,7 +4,7 @@ import random
 import os
 
 nb_objets = 100
-nb_annees = 200
+nb_annees = int(input("Number of years : "))
 nb_UA = 1
 intervalle_nb_jours = 2
 loin = 1.2  # éloignement des planetesimales / planete
@@ -19,7 +19,6 @@ intervalle = 86400 * intervalle_nb_jours
 lim = a * 3
 file_name = 'positions.save'
 reset = int(input("1 to reset the simulation, 0 to continue : "))
-
 
 
 # Working on NBODY_RK
@@ -81,7 +80,7 @@ class Planetesimal:
 
     def __next__(self):
 
-        if ((planete.posx - self.posx) ** 2 + (planete.posy - self.posy) ** 2 > 5e+11):
+        if (planete.posx - self.posx) ** 2 + (planete.posy - self.posy) ** 2 > 2.7e+15:  # ~50e+6km is global radius
             # k1
             self.k1s = self.accel_planetesimal(self.posx, self.posy)
 
@@ -113,11 +112,8 @@ class Planetesimal:
             self.posx = self.posx + self.dt * (self.k1px + 2 * self.k2px + 2 * self.k3px + self.k4px) / 6
             self.posy = self.posy + self.dt * (self.k1py + 2 * self.k2py + 2 * self.k3py + self.k4py) / 6
         else:
-            self.posx, self.posy = 0, 0
-            planetesimal.pop(self.number)
-            planete.nb_objets -= 1
-            mvt_pltl.pop(self.number)
-
+            planete.objects_to_remove.append(self.number)
+            self.posx, self.posy = 1, 1
         return self
 
 
@@ -134,7 +130,7 @@ class Planete:
         self.tolerance = 1e-20
         self.dt = intervalle
         self.t_abs = 0
-        self.nb_objets = nb_objets
+        self.objects_to_remove = []
 
     def __iter__(self):
         self.dt = intervalle
@@ -219,7 +215,7 @@ planetesimal = []
 mvt_pltl = []
 
 for i in range(nb_objets):
-    planetesimal.append(Planetesimal(i-1))
+    planetesimal.append(Planetesimal(i))
 
 # FILE READING
 with open(file_name, 'r') as file:
@@ -248,30 +244,31 @@ if written == 1:
     planete.t_abs = int(file_lines[nb_objets * 4 + 5])
     intervalle = int(file_lines[nb_objets * 4 + 6])
 # ENDING FILE READING
-
+print("{ans} ans se sont écoulés.\n{obj} planétésimales.\n".format(ans=int(planete.t_abs / 31536000), obj=nb_objets))
 
 for i in range(nb_objets):  # iter launch
-    mvt_pltl.append(iter(planetesimal[i - 1]))
+    mvt_pltl.append(iter(planetesimal[i]))
 mvt = iter(planete)
 
-print("{t}, {int}".format(t=planete.t_abs, int=intervalle))
-
-while planete.t < nbiter:  # SIM LOOP
+while planete.t < nbiter:  # SIMULATION LOOP
+    planete.objects_to_remove = []
 
     for i in range(nb_objets):
-        next(mvt_pltl[i - 1])
+        next(mvt_pltl[i])
+    for i in planete.objects_to_remove:
+        planetesimal.pop(i)
+        mvt_pltl.pop(i)
+        nb_objets -= 1
+
     next(mvt)
     coordx.append(planete.posx)
     coordy.append(planete.posy)
 
-    if math.sqrt(planete.posx ** 2 + planete.posy ** 2) < 1400000:  # collision with the sun
-        break
 
-nb_objets = planete.nb_objets
 print("{ans} ans se sont écoulés.\n{obj} planétésimales.\n".format(ans=int(planete.t_abs / 31536000), obj=nb_objets))
 for i in range(nb_objets):
-    coordx_pltl.append(planetesimal[i - 1].posx)
-    coordy_pltl.append(planetesimal[i - 1].posy)
+    coordx_pltl.append(planetesimal[i].posx)
+    coordy_pltl.append(planetesimal[i].posy)
 # planete.error2()
 # print("dE =", planete.de_tot)
 figure = plt.figure()
