@@ -3,14 +3,14 @@ import math
 import random
 import os
 
-nb_objets = 100
+nb_objets = 200
 nb_annees = int(input("Number of years : "))
 nb_UA = 1
 intervalle_nb_jours = 2
 loin = 1.2  # éloignement des planetesimales / planete
 # excentricity
-e = 0
-e_pltl = 0
+e = 0.2
+e_pltl = 0.5
 # constants :
 constG = 6.67408 * 10 ** (-11)
 nbiter = 31536000 * nb_annees
@@ -24,15 +24,6 @@ reset = int(input("1 to reset the simulation, 0 to continue : "))
 # Working on NBODY_RK
 
 
-def rand_pos():  # used to create randomly initially placed planetesimals around the star
-    rand_r = random.randrange(a, loin * a, 500)
-    rand_y = random.randrange(0, rand_r, 500)
-    rand_x = math.sqrt(rand_r ** 2 - rand_y ** 2)
-    rand_x = math.copysign(rand_x, random.choice((-1, 1)))
-    rand_y = math.copysign(rand_y, random.choice((-1, 1)))
-    return rand_x, rand_y
-
-
 class Planetesimal:
     """represents a planetimal"""
 
@@ -42,17 +33,17 @@ class Planetesimal:
 
     def __init__(self, number):
         self.number = int(number)
-        self.posx, self.posy = rand_pos()  # defining initial position
-        self.a_pltl = math.sqrt(self.posx ** 2 + self.posy ** 2)
         self.tolerance = 1e-14
         self.dt = intervalle
 
     def __iter__(self):
         self.dt = intervalle
         # orbital param initialisation
+        self.a_pltl = random.randrange(a, loin * a, 500)
+
         self.dE = self.tolerance + 1
-        self.M = math.fmod(math.atan(self.posy / self.posx) +
-                           self.dt * math.sqrt(self.mu / math.sqrt(self.posx ** 2 + self.posy ** 2) ** 3), 2 * math.pi)
+        self.M = math.fmod(random.uniform(0, 2 * math.pi) +
+                           self.dt * math.sqrt(self.mu / self.a_pltl ** 3), 2 * math.pi)
 
         self.E = self.E0 = self.M
         while self.dE > self.tolerance:
@@ -60,9 +51,13 @@ class Planetesimal:
             self.dE = math.fabs(self.E - self.E0)
             self.E0 = self.E
 
-        self.r = self.a_pltl * (1 - e_pltl * math.cos(self.E))
         self.nu = 2 * math.atan2(math.sqrt(1 + e_pltl) * math.sin(self.E / 2),
                                  math.sqrt(1 - e_pltl) * math.cos(self.E / 2))
+
+        self.r = self.a_pltl * (1 - e_pltl * math.cos(self.E))
+
+        self.posx = self.r * math.cos(self.nu)
+        self.posy = self.r * math.sin(self.nu)
 
         self.vx = -math.sin(self.E) * math.sqrt(self.mu * self.a_pltl) / self.r
         self.vy = math.sqrt(1 - e_pltl ** 2) * math.cos(self.E) * math.sqrt(self.mu * self.a_pltl) / self.r
@@ -80,7 +75,7 @@ class Planetesimal:
 
     def __next__(self):
 
-        if (planete.posx - self.posx) ** 2 + (planete.posy - self.posy) ** 2 > 2.7e+15:  # ~50e+6km is global radius
+        if (planete.posx - self.posx) ** 2 + (planete.posy - self.posy) ** 2 > 2.7e+15:  # ~50e+6m is global radius
             # k1
             self.k1s = self.accel_planetesimal(self.posx, self.posy)
 
@@ -118,7 +113,7 @@ class Planetesimal:
 
 
 class Planete:
-    """représente une planète"""
+    """represents a planet"""
 
     mass = 8.682e+25  # Uranus' mass
     star_mass = 1.9884e+30  # Sun mass
@@ -190,19 +185,19 @@ class Planete:
         self.posy = self.posy + self.dt * (self.k1py + 2 * self.k2py + 2 * self.k3py + self.k4py) / 6
         self.t_abs += self.dt
         self.t += self.dt
-        """if self.t > 0.1 * 31536000 and self.t < 1 * 31536000:
+        if self.t <= 0.01 * 31536000:
             # ERROR 1
             self.e_cin = 0.5 * self.mass * math.sqrt(self.vx ** 2 + self.vy ** 2)
             self.e_pot = 0.5 * constG * self.mass * self.star_mass / math.sqrt(self.posx ** 2 + self.posy ** 2)
-            self.e_tot = -self.e_cin + self.e_pot"""
+            self.e_tot = -self.e_cin + self.e_pot
         return self
 
-    """def error2(self):
+    def error2(self):
         self.e_cin = 0.5 * self.mass * math.sqrt(self.vx ** 2 + self.vy ** 2)
         self.e_pot = 0.5 * constG * self.mass * self.star_mass / math.sqrt(self.posx ** 2 + self.posy ** 2)
         self.e_tot2 = -self.e_cin + self.e_pot
         self.de_tot = (self.e_tot2 - self.e_tot) / self.e_tot
-        return self"""
+        return self
 
 
 planete = Planete('Uranus')
@@ -250,7 +245,7 @@ for i in range(nb_objets):  # iter launch
     mvt_pltl.append(iter(planetesimal[i]))
 mvt = iter(planete)
 
-while planete.t < nbiter:  # SIMULATION LOOP
+while planete.t <= nbiter:  # SIMULATION LOOP
     planete.objects_to_remove = []
 
     for i in range(nb_objets):
@@ -261,6 +256,7 @@ while planete.t < nbiter:  # SIMULATION LOOP
         nb_objets -= 1
 
     next(mvt)
+    # if planete.t > 31536000 * 999000:
     coordx.append(planete.posx)
     coordy.append(planete.posy)
 
@@ -269,8 +265,8 @@ print("{ans} ans se sont écoulés.\n{obj} planétésimales.\n".format(ans=int(p
 for i in range(nb_objets):
     coordx_pltl.append(planetesimal[i].posx)
     coordy_pltl.append(planetesimal[i].posy)
-# planete.error2()
-# print("dE =", planete.de_tot)
+planete.error2()
+print("dE =", planete.de_tot)
 figure = plt.figure()
 axes = figure.add_subplot(111)
 axes.set_xlim(-lim, lim)
