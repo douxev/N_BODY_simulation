@@ -89,10 +89,12 @@ class Planetesimal:
 
     def accel_planetesimal(self, posx, posy):
         # acceleration of one planetesimal
-        return [((barycentre.posx - posx) * constG * barycentre.mass / (math.sqrt((barycentre.posx - posx) ** 2 +
-                                                                                  (barycentre.posy - posy) ** 2) ** 3)),
-                ((barycentre.posy - posy) * constG * barycentre.mass / (math.sqrt((barycentre.posx - posx) ** 2 +
-                                                                                  (barycentre.posy - posy) ** 2) ** 3))]
+        return ((-posx * constG * self.star_mass / (math.sqrt(posx ** 2 + posy ** 2) ** 3)) -
+                ((posx - planete.posx) * constG * self.plan_mass / (math.sqrt((planete.posx - posx) ** 2 +
+                                                                              (planete.posy - posy) ** 2) ** 3)),
+                (-posy * constG * self.star_mass / (math.sqrt(posx ** 2 + posy ** 2) ** 3)) -
+                ((posy - planete.posy) * constG * self.plan_mass / (math.sqrt((planete.posx - posx) ** 2 +
+                                                                              (planete.posy - posy) ** 2) ** 3)))
 
     def __next__(self):
 
@@ -141,6 +143,7 @@ class Planete:
     def __init__(self, name):
         self.name = name
         self.t = 0
+        self.planetesimal_mass = 9.445e+20  # Ceres mass
         self.tolerance = 1e-14
         self.dt = intervalle
         self.t_abs = 0
@@ -168,10 +171,17 @@ class Planete:
 
     def accel(self, posx, posy):
         # acceleration
-        return [((barycentre.posx - posx) * constG * barycentre.mass / (math.sqrt((barycentre.posx - posx) ** 2 +
-                                                                                  (barycentre.posy - posy) ** 2) ** 3)),
-                ((barycentre.posy - posy) * constG * barycentre.mass / (math.sqrt((barycentre.posx - posx) ** 2 +
-                                                                                  (barycentre.posy - posy) ** 2) ** 3))]
+
+        self.coord_x_accel = (-posx * constG * self.star_mass / (math.sqrt(posx ** 2 + posy ** 2) ** 3))
+        self.coord_y_accel = (-posy * constG * self.star_mass / (math.sqrt(posx ** 2 + posy ** 2) ** 3))
+
+        for k in range(nb_objets):
+            self.coord_x_accel += ((planetesimal[k].posx - posx) * constG * self.planetesimal_mass
+                                   / (math.sqrt((planetesimal[k].posx - posx) ** 2 + (planetesimal[k].posy - posy) ** 2) ** 3))
+            self.coord_y_accel += ((planetesimal[k].posy - posy) * constG * self.planetesimal_mass
+                                   / (math.sqrt((planetesimal[k].posx - posx) ** 2 + (planetesimal[k].posy - posy) ** 2) ** 3))
+
+        return self.coord_x_accel, self.coord_y_accel
 
     def __next__(self):
         # k1
