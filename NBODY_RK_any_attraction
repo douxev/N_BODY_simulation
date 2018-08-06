@@ -21,7 +21,7 @@ file_name = 'positions.save'
 reset = int(input("1 to reset the simulation, 0 to continue : "))
 
 
-# Working on NBODY_RK, each body is attracted to any of the others bodies
+# Working on NBODY_RK
 
 
 class Barycentre:
@@ -248,7 +248,7 @@ if written == 1:
     planete.t_abs = int(file_lines[nb_objets * 4 + 5])
     intervalle = int(file_lines[nb_objets * 4 + 6])
 # ENDING FILE READING
-print("{ans} ans se sont écoulés.\n{obj} planétésimales.\n".format(ans=int(planete.t_abs / 31536000), obj=nb_objets))
+print("{ans} ans se sont écoulés avant le début de la simulation.\n{obj} planétésimales.\n".format(ans=int(planete.t_abs / 31536000), obj=nb_objets))
 
 for i in range(nb_objets):  # iter launch
     mvt_pltl.append(iter(planetesimal[i]))
@@ -270,12 +270,10 @@ while planete.t < nbiter:  # SIMULATION LOOP
     coordy.append(planete.posy)
 
 
-print("{ans} ans se sont écoulés.\n{obj} planétésimales.\n".format(ans=int(planete.t_abs / 31536000), obj=nb_objets))
+print("{ans} ans se sont écoulés depuis le début du calcul.\n{obj} planétésimales.\n".format(ans=int(planete.t_abs / 31536000), obj=nb_objets))
 for i in range(nb_objets):
     coordx_pltl.append(planetesimal[i].posx)
     coordy_pltl.append(planetesimal[i].posy)
-# planete.error2()
-# print("dE =", planete.de_tot)
 figure = plt.figure()
 axes = figure.add_subplot(111)
 axes.set_xlim(-lim, lim)
