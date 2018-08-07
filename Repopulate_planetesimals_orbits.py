@@ -41,15 +41,6 @@ def orbits(number, i):
 
         # orbital param initialisation
         orbit_E = math.fmod(random.uniform(0, 200 * math.pi), 2 * math.pi)
-        orbit_dE = orbit_tolerance + 1
-        # orbit_E = orbit_M
-        """orbit_E0 = orbit_M
-        while orbit_dE > orbit_tolerance:
-            orbit_E = orbit_E - (orbit_E - orbit_e * math.sin(orbit_E) - orbit_M) / \
-                      (1 - orbit_e * math.cos(orbit_E))
-            orbit_dE = math.fabs(orbit_E - orbit_E0)
-            orbit_E0 = orbit_E"""
-        # if orbit_e >=1: break
         orbit_nu = 2 * math.atan2(math.sqrt(1 + orbit_e) * math.sin(orbit_E / 2),
                                   math.sqrt(abs(1 - orbit_e)) * math.cos(orbit_E / 2))
 
@@ -59,7 +50,6 @@ def orbits(number, i):
         orbit_return_posy.append(orbit_r * math.sin(orbit_nu))
         compte += 1
 
-    print(orbit_e, orbit_a)
     return orbit_return_posx, orbit_return_posy
 
 
