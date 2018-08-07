@@ -9,12 +9,12 @@ intervalle = 86400 * 2
 annee = 31536000
 file_name = 'positions.save'
 nb_objets = 600
-iterations = 50
+iterations = 30
 
 coordx_pltl, coordy_pltl = [], []
 a = 149597900000.0 * 1
-lim = a * 3
-with open(file_name, 'r') as file:  # A ENLEVER POUR LE CODE FINAL
+lim = a * 2
+with open(file_name, 'r') as file:
     file_lines = file.readlines()
 orbit_return_posx, orbit_return_posy = [], []
 
@@ -24,8 +24,6 @@ def orbits(number, i):
     global orbit_return_posx, orbit_return_posy
     global orbit
     orbit = []
-    orbit_nu, orbit_a, orbit_e = [], [], []
-    orbit_tolerance = 1e-14
     compte = 0
     iterat = i
     while compte < number:
@@ -66,6 +64,8 @@ nb_objets = nb_objets + iterations * nb_objets
 
 figure = plt.figure()
 axes = figure.add_subplot(111)
+axes.set_xlim(-lim, lim)
+axes.set_ylim(-lim, lim)
 plt.grid(True)
 plt.plot(coordx_pltl, coordy_pltl, linestyle='None', color='g', marker='.')  # planetesimals coordinates
 plt.plot([0], marker='o', color='r')  # star's coordinates
