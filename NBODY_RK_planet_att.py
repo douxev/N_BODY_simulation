@@ -271,7 +271,9 @@ plt.grid(True)
 plt.plot(coordx, coordy, linestyle='-.', marker=',')  # planet's coordinates
 plt.plot(coordx_pltl, coordy_pltl, linestyle='None', color='g', marker='.')  # planetesimals coordinates
 plt.plot([0], marker='o', color='r')  # star's coordinates
+plt.gca().set_aspect('equal', adjustable='box')
 plt.tight_layout()
+plt.draw()
 plt.show()
 
 with open(file_name, 'w') as file:
