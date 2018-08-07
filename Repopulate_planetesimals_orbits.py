@@ -9,7 +9,7 @@ intervalle = 86400 * 2
 annee = 31536000
 file_name = 'positions.save'
 nb_objets = 600
-iterations = 30
+iterations = 20
 
 coordx_pltl, coordy_pltl = [], []
 a = 149597900000.0 * 1
@@ -69,5 +69,7 @@ axes.set_ylim(-lim, lim)
 plt.grid(True)
 plt.plot(coordx_pltl, coordy_pltl, linestyle='None', color='g', marker='.')  # planetesimals coordinates
 plt.plot([0], marker='o', color='r')  # star's coordinates
+plt.gca().set_aspect('equal', adjustable='box')
 plt.tight_layout()
+plt.draw()
 plt.show()
