@@ -56,9 +56,9 @@ def calculate(position, speed, two_dim):
             omega = 2 * math.pi - math.acos(scalar(n, e) / norm(n) / norm(e))
 
 
-        return a, e, mean, i, omega, OMEGA
+        return a, var_e, mean, i, omega, OMEGA
     else:
-        return a, e, mean
+        return float(a), float(var_e), float(mean)
 
 # print("\nSemi-major axis a = {a}\nEccentricity e = {e}\nArgument of periapsis omega = {omega}\nLAN OMEGA = {OMEGA}\n"
 #       "Inclination i = {i}\nMean anomaly M = {mean}\n".format(a=a, e=var_e, omega=omega, OMEGA=OMEGA, i=i, mean=mean))
