@@ -24,29 +24,6 @@ reset = int(input("1 to reset the simulation, 0 to continue : "))
 # Working on NBODY_RK
 
 
-class Barycentre:
-    def __init__(self):
-        self.sun_mass = 1.9884e+30
-        self.planetesimal_mass = 9.445e+20  # Ceres mass
-        self.mass = self.sun_mass + planete.mass + nb_objets * self.planetesimal_mass
-
-    def __iter__(self):
-
-        return self
-
-    def __next__(self):
-        self.posx = 0
-        self.posy = 0
-
-        for k in range(nb_objets):
-            self.posx += planetesimal[k].posx * self.planetesimal_mass
-            self.posy += planetesimal[k].posy * self.planetesimal_mass
-
-        self.posx = (self.posx + planete.mass * planete.posx) / self.mass
-        self.posy = (self.posy + planete.mass * planete.posy) / self.mass
-        return self
-
-
 class Planetesimal:
     """represents a planetimal"""
 
@@ -263,13 +240,10 @@ print("{ans} ans se sont écoulés avant le début de la simulation.\n{obj} plan
 for i in range(nb_objets):  # iter launch
     mvt_pltl.append(iter(planetesimal[i]))
 mvt = iter(planete)
-barycentre = Barycentre()
-next_barycentre = iter(barycentre)
 
 
 while planete.t < nbiter:  # SIMULATION LOOP
 
-    next(next_barycentre)
 
     for i in range(nb_objets):
         next(mvt_pltl[i])
