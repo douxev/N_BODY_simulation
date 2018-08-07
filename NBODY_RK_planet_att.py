@@ -3,14 +3,15 @@ import math
 import random
 import os
 
-nb_objets = 200
+nb_objets = 600
 nb_annees = int(input("Number of years : "))
 nb_UA = 1
 intervalle_nb_jours = 2
-loin = 1.2  # éloignement des planetesimales / planete
+loin = 1.5  # éloignement des planetesimales / planete
+proche = 0.5
 # excentricity
-e = 0.2
-e_pltl = 0.15
+e = 0
+e_pltl = 0
 # constants :
 constG = 6.67408e-11
 nbiter = 31536000 * nb_annees
@@ -39,7 +40,7 @@ class Planetesimal:
     def __iter__(self):
         self.dt = intervalle
         # orbital param initialisation
-        self.a_pltl = random.randrange(a, loin * a, 500)
+        self.a_pltl = random.randrange(a * proche, loin * a, 500)
 
         self.dE = self.tolerance + 1
         self.M = math.fmod(random.uniform(0, 2 * math.pi) +
@@ -154,9 +155,11 @@ class Planete:
 
         for k in range(nb_objets):
             self.coord_x_accel += ((planetesimal[k].posx - posx) * constG * self.planetesimal_mass
-                                   / (math.sqrt((planetesimal[k].posx - posx) ** 2 + (planetesimal[k].posy - posy) ** 2) ** 3))
+                                   / (math.sqrt((planetesimal[k].posx - posx) ** 2 +
+                                                (planetesimal[k].posy - posy) ** 2) ** 3))
             self.coord_y_accel += ((planetesimal[k].posy - posy) * constG * self.planetesimal_mass
-                                   / (math.sqrt((planetesimal[k].posx - posx) ** 2 + (planetesimal[k].posy - posy) ** 2) ** 3))
+                                   / (math.sqrt((planetesimal[k].posx - posx) ** 2 +
+                                                (planetesimal[k].posy - posy) ** 2) ** 3))
 
         return self.coord_x_accel, self.coord_y_accel
 
@@ -235,7 +238,8 @@ if written == 1:
     planete.t_abs = int(file_lines[nb_objets * 4 + 5])
     intervalle = int(file_lines[nb_objets * 4 + 6])
 # ENDING FILE READING
-print("{ans} ans se sont écoulés avant le début de la simulation.\n{obj} planétésimales.\n".format(ans=int(planete.t_abs / 31536000), obj=nb_objets))
+print("{ans} ans se sont écoulés avant le début de la simulation.\n{obj} planétésimales.\n".format(
+    ans=int(planete.t_abs / 31536000), obj=nb_objets))
 
 for i in range(nb_objets):  # iter launch
     mvt_pltl.append(iter(planetesimal[i]))
@@ -254,7 +258,8 @@ while planete.t < nbiter:  # SIMULATION LOOP
     coordy.append(planete.posy)
 
 
-print("{ans} ans se sont écoulés depuis le début du calcul.\n{obj} planétésimales.\n".format(ans=int(planete.t_abs / 31536000), obj=nb_objets))
+print("{ans} ans se sont écoulés depuis le début du calcul.\n{obj} planétésimales.\n".format(
+    ans=int(planete.t_abs / 31536000), obj=nb_objets))
 for i in range(nb_objets):
     coordx_pltl.append(planetesimal[i].posx)
     coordy_pltl.append(planetesimal[i].posy)
@@ -266,6 +271,7 @@ plt.grid(True)
 plt.plot(coordx, coordy, linestyle='-.', marker=',')  # planet's coordinates
 plt.plot(coordx_pltl, coordy_pltl, linestyle='None', color='g', marker='.')  # planetesimals coordinates
 plt.plot([0], marker='o', color='r')  # star's coordinates
+plt.tight_layout()
 plt.show()
 
 with open(file_name, 'w') as file:
