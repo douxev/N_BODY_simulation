@@ -276,6 +276,7 @@ plt.gca().set_aspect('equal', adjustable='box')
 plt.tight_layout()
 plt.title("Simulation after {}years\n{}orbits calculated.".format(planete.t_abs / annee, nb_objets))
 plt.xlabel("Relative position to massive object [AU]")
+figure.canvas.set_window_title("Simulation after {}years.".format(planete.t_abs / annee))
 plt.draw()
 plt.show()
 
