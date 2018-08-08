@@ -14,13 +14,14 @@ e = 0
 e_pltl = 0
 # constants :
 constG = 6.67408e-11
-nbiter = 31536000 * nb_annees
-a = 149597900000.0 * nb_UA
+annee = 31536000
+nbiter = annee * nb_annees
+UA = 149597900000.0
+a = UA * nb_UA
 intervalle = 86400 * intervalle_nb_jours
-lim = a * 3
+lim = 2
 file_name = 'positions.save'
 reset = int(input("1 to reset the simulation, 0 to continue : "))
-
 
 # Working on NBODY_RK
 
@@ -239,7 +240,7 @@ if written == 1:
     intervalle = int(file_lines[nb_objets * 4 + 6])
 # ENDING FILE READING
 print("{ans} ans se sont écoulés avant le début de la simulation.\n{obj} planétésimales.\n".format(
-    ans=int(planete.t_abs / 31536000), obj=nb_objets))
+    ans=int(planete.t_abs / annee), obj=nb_objets))
 
 for i in range(nb_objets):  # iter launch
     mvt_pltl.append(iter(planetesimal[i]))
@@ -253,16 +254,16 @@ while planete.t < nbiter:  # SIMULATION LOOP
         next(mvt_pltl[i])
 
     next(mvt)
-    # if planete.t > 31536000 * 999000:
-    coordx.append(planete.posx)
-    coordy.append(planete.posy)
+    # if planete.t > annee * 999000:
+    coordx.append(planete.posx / UA)
+    coordy.append(planete.posy / UA)
 
 
 print("{ans} ans se sont écoulés depuis le début du calcul.\n{obj} planétésimales.\n".format(
-    ans=int(planete.t_abs / 31536000), obj=nb_objets))
+    ans=int(planete.t_abs / annee), obj=nb_objets))
 for i in range(nb_objets):
-    coordx_pltl.append(planetesimal[i].posx)
-    coordy_pltl.append(planetesimal[i].posy)
+    coordx_pltl.append(planetesimal[i].posx / UA)
+    coordy_pltl.append(planetesimal[i].posy / UA)
 figure = plt.figure()
 axes = figure.add_subplot(111)
 axes.set_xlim(-lim, lim)
@@ -273,6 +274,8 @@ plt.plot(coordx_pltl, coordy_pltl, linestyle='None', color='g', marker='.')  # p
 plt.plot([0], marker='o', color='r')  # star's coordinates
 plt.gca().set_aspect('equal', adjustable='box')
 plt.tight_layout()
+plt.title("Simulation after {}years\n{}orbits calculated.".format(planete.t_abs / annee, nb_objets))
+plt.xlabel("Relative position to massive object [AU]")
 plt.draw()
 plt.show()
 
