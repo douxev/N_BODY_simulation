@@ -9,7 +9,7 @@ intervalle = 86400 * 2
 annee = 31536000
 file_name = 'positions.save'
 nb_objets = 600
-iterations = 20
+iterations = 13
 
 coordx_pltl, coordy_pltl = [], []
 lim = 2
@@ -18,6 +18,11 @@ with open(file_name, 'r') as file:
     file_lines = file.readlines()
 orbit_return_posx, orbit_return_posy = [], []
 temps = int(int(file_lines[nb_objets * 4 + 5]) / annee)
+coordx, coordy = [], []
+for i in range(nb_objets):
+    j = i * 4 + 5
+    coordx.append(float(file_lines[j]) / UA)
+    coordy.append(float(file_lines[j + 1]) / UA)
 
 def orbits(number, i):
 
@@ -61,7 +66,8 @@ coordy_pltl.append(temp_arr_coordy)
 
 
 figure = plt.figure()
-axes = figure.add_subplot(111)
+axes = figure.add_subplot(1,2,2)
+
 axes.set_xlim(-lim, lim)
 axes.set_ylim(-lim, lim)
 plt.grid(True)
@@ -72,5 +78,17 @@ plt.tight_layout()
 plt.title("Simulation after {}years\n{}orbits repopulated with {}planetesimals.".
           format(temps, nb_objets, nb_objets * iterations + nb_objets))
 plt.xlabel("Relative position to massive object [AU]")
+
+axes = figure.add_subplot(1,2,1)
+axes.set_xlim(-lim, lim)
+axes.set_ylim(-lim, lim)
+plt.grid(True)
+plt.plot(coordx, coordy, linestyle='None', color='g', marker='.')  # planetesimals coordinates
+plt.plot([0], marker='o', color='r')  # star's coordinates
+plt.gca().set_aspect('equal', adjustable='box')
+plt.tight_layout()
+plt.title("Simulation after {}years\n{}orbits calculated".format(temps, nb_objets))
+plt.xlabel("Relative position to massive object [AU]")
+figure.canvas.set_window_title("Simulation after {}years.".format(temps))
 plt.draw()
 plt.show()
