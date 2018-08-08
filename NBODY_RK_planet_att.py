@@ -37,9 +37,6 @@ class Planetesimal:
         self.number = int(number)
         self.tolerance = 1e-14
         self.dt = intervalle
-
-    def __iter__(self):
-        self.dt = intervalle
         # orbital param initialisation
         self.a_pltl = random.randrange(a * proche, loin * a, 500)
 
@@ -64,7 +61,10 @@ class Planetesimal:
         self.vx = -math.sin(self.E) * math.sqrt(self.mu * self.a_pltl) / self.r
         self.vy = math.sqrt(1 - e_pltl ** 2) * math.cos(self.E) * math.sqrt(self.mu * self.a_pltl) / self.r
         # end of orbital initialisation param
+    def __iter__(self):
+        self.dt = intervalle
         return self
+
 
     def accel_planetesimal(self, posx, posy):
         # acceleration of one planetesimal
@@ -126,10 +126,6 @@ class Planete:
         self.tolerance = 1e-14
         self.dt = intervalle
         self.t_abs = 0
-        self.objects_to_remove = []
-
-    def __iter__(self):
-        self.dt = intervalle
         # orbital param initialisation
         self.dE = self.tolerance + 1
         self.M = math.fmod(self.dt * math.sqrt(self.mu / a ** 3), 2 * math.pi)
@@ -146,7 +142,11 @@ class Planete:
         self.vx = -math.sin(self.E) * math.sqrt(self.mu * a) / self.r
         self.vy = math.sqrt(1 - e ** 2) * math.cos(self.E) * math.sqrt(self.mu * a) / self.r
         # end of orbital initialisation param
+
+    def __iter__(self):
+        self.dt = intervalle
         return self
+
 
     def accel(self, posx, posy):
         # acceleration
